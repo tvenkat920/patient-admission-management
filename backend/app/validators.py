@@ -1,5 +1,5 @@
 import re
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from typing import Dict, List, Optional
 
 # Predefined valid options as required by assignment specification
@@ -138,10 +138,11 @@ def validate_doctor(doctor: str, department: Optional[str] = None) -> str:
 
 
 def validate_admission_date(adm_date: date) -> date:
-    """Validate admission date is not in the future."""
+    """Validate admission date is not in the future (aligned to IST / local date)."""
     if not adm_date:
         raise ValueError("Admission date is required.")
-    today = date.today()
+    ist_today = datetime.now(timezone(timedelta(hours=5, minutes=30))).date()
+    today = max(date.today(), ist_today)
     if adm_date > today:
         raise ValueError("Admission date cannot be in the future.")
     return adm_date

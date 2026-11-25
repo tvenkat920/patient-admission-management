@@ -7,7 +7,8 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  // Allow sufficient time for free-tier cloud backend cold starts (~30-50s)
+  timeout: 60000,
 });
 
 // Centralized response interceptor for error normalization

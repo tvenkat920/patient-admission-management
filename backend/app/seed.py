@@ -1,11 +1,15 @@
-import httpx
 from datetime import date, timedelta
+import httpx
+from sqlalchemy.orm import Session
+from app import crud
+from app.models import Patient
+from app.schemas import PatientCreate
 
-def seed():
-    base_url = "http://127.0.0.1:8000/api"
+
+def get_sample_patients():
+    """Return initial realistic sample patient records for bootstrapping."""
     today = date.today()
-
-    patients = [
+    return [
         {"name": "Arthur Pendelton", "age": 52, "gender": "Male", "ward": "ICU", "department": "Cardiology", "doctor": "Dr. Sarah Jenkins", "admission_date": str(today - timedelta(days=4)), "status": "Admitted"},
         {"name": "Sophia Chen", "age": 34, "gender": "Female", "ward": "General Ward", "department": "Neurology", "doctor": "Dr. Elena Rostova", "admission_date": str(today - timedelta(days=6)), "status": "Admitted"},
         {"name": "Lucas Montgomery", "age": 9, "gender": "Male", "ward": "Pediatric Ward", "department": "Pediatrics", "doctor": "Dr. Emily Taylor", "admission_date": str(today - timedelta(days=2)), "status": "Admitted"},
@@ -15,6 +19,22 @@ def seed():
         {"name": "Oliver Twist", "age": 11, "gender": "Male", "ward": "Pediatric Ward", "department": "Pediatrics", "doctor": "Dr. David Kim", "admission_date": str(today - timedelta(days=8)), "status": "Discharged"},
         {"name": "Charlotte Bronte", "age": 61, "gender": "Female", "ward": "ICU", "department": "Cardiology", "doctor": "Dr. Robert Chen", "admission_date": str(today - timedelta(days=3)), "status": "Admitted"}
     ]
+
+
+def seed_db_if_empty(db: Session) -> int:
+    """Populate initial sample records directly via CRUD only if the database is empty."""
+    if db.query(Patient.id).first() is not None:
+        return 0
+    created = 0
+    for payload in get_sample_patients():
+        crud.create_patient(db, PatientCreate(**payload))
+        created += 1
+    return created
+
+
+def seed():
+    base_url = "http://127.0.0.1:8000/api"
+    patients = get_sample_patients()
 
     # Check if patients already exist
     existing = httpx.get(f"{base_url}/patients?limit=1").json()

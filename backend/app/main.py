@@ -1,13 +1,28 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from app.config import settings
-from app.database import engine, Base
+from app.database import engine, Base, SessionLocal
 from app.routes import patients, dashboard, options
+from app.seed import seed_db_if_empty
 
-# Create tables in SQLite on application startup
+# Create tables in SQLite/PostgreSQL on application startup
 Base.metadata.create_all(bind=engine)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Optionally bootstrap initial sample data when database starts empty in cloud demos."""
+    if settings.SEED_IF_EMPTY:
+        db = SessionLocal()
+        try:
+            seed_db_if_empty(db)
+        finally:
+            db.close()
+    yield
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -15,7 +30,8 @@ app = FastAPI(
     description="Production-ready REST API for Patient Admission Management System",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
-    openapi_url="/api/openapi.json"
+    openapi_url="/api/openapi.json",
+    lifespan=lifespan,
 )
 
 # CORS Middleware setup

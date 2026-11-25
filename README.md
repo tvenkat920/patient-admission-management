@@ -5,7 +5,7 @@
 [![React](https://img.shields.io/badge/Frontend-React_18-61DAFB.svg?style=flat&logo=react&logoColor=black)](https://reactjs.org)
 [![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind_CSS-38B2AC.svg?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![SQLite](https://img.shields.io/badge/Database-SQLite_Persistent-003B57.svg?style=flat&logo=sqlite&logoColor=white)](https://www.sqlite.org)
-[![Python Tests](https://img.shields.io/badge/Pytest-25_Passed-success.svg?style=flat&logo=pytest&logoColor=white)](https://pytest.org)
+[![Python Tests](https://img.shields.io/badge/Pytest-29_Passed-success.svg?style=flat&logo=pytest&logoColor=white)](https://pytest.org)
 
 ---
 
@@ -73,22 +73,22 @@ Hospital administrative staff frequently encounter delays and errors when managi
 
 ### **Testing**
 - **Testing Framework:** Pytest (v9.2)
-- **Test Client:** HTTPX & Starlette TestClient (25 automated test cases executed)
+- **Test Client:** HTTPX & Starlette TestClient (29 automated unit, integration, and E2E test cases executed)
 
 ---
 
 ## 6. Screenshots & Interface Overview
 
 ### Dashboard & Metrics Overview
-![Dashboard Overview Placeholder](https://raw.githubusercontent.com/placeholder-images/dashboard-preview.png)
+![Dashboard Overview](docs/screenshots/dashboard.png)
 *Modern hospital dashboard displaying live statistic cards, ward occupancy breakdown, department distributions, and recent admissions table.*
 
 ### Patient Management Registry
-![Patient Registry Placeholder](https://raw.githubusercontent.com/placeholder-images/registry-preview.png)
+![Patient Registry](docs/screenshots/patients-registry.png)
 *Registry table featuring search input, ward/department/doctor/status filters, status badges, and action toolbars.*
 
 ### Patient Registration & Validation Modal
-![Patient Modal Placeholder](https://raw.githubusercontent.com/placeholder-images/modal-preview.png)
+![Patient Modal](docs/screenshots/add-patient-modal.png)
 *Patient registration modal with real-time feedback, doctor-department cascading select, and field-level validation.*
 
 ---
@@ -126,7 +126,7 @@ patient-admission-management/
 │   ├── package.json                   # Node dependencies & build scripts
 │   ├── postcss.config.js              # PostCSS configuration
 │   ├── tailwind.config.js             # Custom Tailwind color palette & typography
-│   ├── vercel.json                    # Vercel deployment rewrites
+│   ├── netlify.toml                   # Netlify SPA redirect configuration
 │   └── vite.config.js                 # Vite build & dev configuration
 │
 ├── backend/                           # Python FastAPI Backend
@@ -152,9 +152,11 @@ patient-admission-management/
 │   ├── .env.example                   # Backend environment template
 │   └── requirements.txt               # Python package dependencies
 │
+├── .github/workflows/                 # CI/CD workflows (GitHub Pages auto-deploy)
+├── docs/screenshots/                  # Application UI screenshots
 ├── .gitignore                         # Git exclusion rules
+├── netlify.toml                       # Root Netlify deployment config
 ├── render.yaml                        # Render Blueprint deployment config
-├── vercel.json                        # Root Vercel SPA configuration
 └── README.md                          # Comprehensive project documentation
 ```
 
@@ -229,7 +231,7 @@ ENVIRONMENT=development
 DATABASE_URL=sqlite:///./patients.db
 
 # CORS Configuration (comma-separated origins)
-CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,https://your-frontend.vercel.app
+CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,https://tvenkat920.github.io
 ```
 
 ### Frontend `.env`
@@ -321,87 +323,80 @@ python backend/app/seed.py
 
 ## 13. Database Information & Persistence
 
-- **Database Engine:** SQLite 3.
-- **Persistence Guarantee:** Data is committed via SQLAlchemy ORM transactions to a durable disk file (`patients.db`). It persists across full application restarts, server reboots, and multi-session instances.
-- **Render Production Disk:** On Render, persistent storage is enabled via a mounted disk at `/var/data` configured in `render.yaml`, safeguarding the SQLite database from ephemeral container restarts.
+- **Database Engines:** SQLite 3 (local development & testing) and PostgreSQL (production cloud via Render Blueprint).
+- **Persistence Guarantee:** Data is committed via SQLAlchemy ORM transactions to durable storage (`patients.db` locally or PostgreSQL in the cloud). It persists across full application restarts, server reboots, and multi-session instances.
 - **Automated Verification:** Verified through automated test `test_sqlite_persistence_across_sessions` which writes data, disposes the SQLAlchemy engine, instantiates a clean engine connection, and confirms data fidelity.
 
 ---
 
 ## 14. Deployment Instructions
 
-### Deploying the Backend on Render
+### Deploying the Backend on Render (Free Tier)
 1. Create a free account on [Render](https://render.com).
-2. Click **New +** -> **Blueprint** (or **Web Service**).
-3. Connect your GitHub repository.
+2. Click **New +** -> **Blueprint**.
+3. Connect your GitHub repository (`tvenkat920/patient-admission-management`).
 4. Render will automatically detect `render.yaml`:
-   - Environment: `Python`
+   - Service: `medicare-patient-api-tvenkat920` (Python 3.12, Free plan)
    - Build Command: `pip install -r requirements.txt`
    - Start Command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-   - Persistent Disk: `/var/data` (1 GB)
-   - Database URL: `sqlite:////var/data/patients.db`
-5. Deploy the service. Note down the backend URL (e.g., `https://patient-admission-backend.onrender.com`).
+   - Persistent Database: Free Render PostgreSQL (`medicare-patient-db`) wired via `DATABASE_URL`
+5. Click **Apply**. Note down the backend URL (`https://medicare-patient-api-tvenkat920.onrender.com`).
 
-### Deploying the Frontend on Vercel
-1. Create an account on [Vercel](https://vercel.com).
-2. Click **Add New** -> **Project** and import your repository.
-3. Configure the project settings:
-   - Framework Preset: `Vite`
-   - Root Directory: `frontend`
-   - Build Command: `npm run build`
-   - Output Directory: `dist`
-4. Set Environment Variables:
-   - `VITE_API_BASE_URL`: `https://your-backend.onrender.com/api`
-5. Click **Deploy**. Vercel will output your live URL (e.g., `https://patient-admission-management.vercel.app`).
-6. Update the backend `CORS_ORIGINS` environment variable on Render to include your Vercel URL.
+### Frontend Hosting (GitHub Pages / Netlify)
+- **GitHub Pages (Automated via GitHub Actions):** `.github/workflows/deploy-frontend.yml` automatically builds `frontend/` and publishes it to `https://tvenkat920.github.io/patient-admission-management/`. Configure repository variable `VITE_API_BASE_URL` if using a custom backend URL.
+- **Netlify (Optional Alternative):** Import the repository on [Netlify](https://app.netlify.com) (`netlify.toml` is pre-configured with Base directory `frontend`, Publish directory `dist`, and SPA rewrites) and set `VITE_API_BASE_URL=https://medicare-patient-api-tvenkat920.onrender.com/api`.
 
 ---
 
 ## 15. Live Application & Repository Links
 
-- **Frontend Live URL:** `https://patient-admission-management.vercel.app` *(or custom domain)*
-- **Backend API Live URL:** `https://patient-admission-backend.onrender.com/api`
-- **Interactive Swagger Documentation:** `https://patient-admission-backend.onrender.com/api/docs`
-- **Public GitHub Repository:** `https://github.com/tvenkat920/patient-admission-management`
+- **Frontend Live URL (GitHub Pages):** https://tvenkat920.github.io/patient-admission-management/
+- **Backend API Live URL (Render):** https://medicare-patient-api-tvenkat920.onrender.com/api
+- **Interactive Swagger Documentation:** https://medicare-patient-api-tvenkat920.onrender.com/api/docs
+- **Public GitHub Repository:** https://github.com/tvenkat920/patient-admission-management
 
 ---
 
 ## 16. Test Suite & Verification Results
 
-All 25 automated backend tests pass with 100% success rate:
+All 29 automated backend and end-to-end integration tests pass with 100% success rate:
 
 ```
 ============================= test session starts =============================
 platform win32 -- Python 3.12.10, pytest-9.2.0
-collected 25 items
+collected 29 items
 
-backend/tests/test_dashboard.py::test_dashboard_stats PASSED             [  4%]
-backend/tests/test_patients.py::test_health_check PASSED                 [  8%]
-backend/tests/test_patients.py::test_get_options PASSED                  [ 12%]
-backend/tests/test_patients.py::test_create_patient PASSED               [ 16%]
-backend/tests/test_patients.py::test_get_patient_by_id_and_code PASSED   [ 20%]
-backend/tests/test_patients.py::test_get_patient_not_found PASSED        [ 24%]
-backend/tests/test_patients.py::test_list_patients_pagination PASSED     [ 28%]
-backend/tests/test_patients.py::test_search_patients_by_name_and_code PASSED [ 32%]
-backend/tests/test_patients.py::test_filter_patients PASSED              [ 36%]
-backend/tests/test_patients.py::test_update_patient PASSED               [ 40%]
-backend/tests/test_patients.py::test_discharge_patient PASSED            [ 44%]
-backend/tests/test_patients.py::test_delete_patient PASSED               [ 48%]
-backend/tests/test_persistence.py::test_sqlite_persistence_across_sessions PASSED [ 52%]
-backend/tests/test_validation.py::test_reject_missing_name PASSED        [ 56%]
-backend/tests/test_validation.py::test_reject_numbers_in_name PASSED     [ 60%]
-backend/tests/test_validation.py::test_reject_special_characters_in_name PASSED [ 64%]
-backend/tests/test_validation.py::test_accept_and_trim_valid_name PASSED [ 68%]
-backend/tests/test_validation.py::test_reject_negative_age PASSED        [ 72%]
-backend/tests/test_validation.py::test_reject_age_over_120 PASSED        [ 76%]
-backend/tests/test_validation.py::test_reject_future_admission_date PASSED [ 80%]
-backend/tests/test_validation.py::test_reject_invalid_gender PASSED      [ 84%]
-backend/tests/test_validation.py::test_reject_invalid_ward PASSED        [ 88%]
-backend/tests/test_validation.py::test_reject_invalid_department PASSED  [ 92%]
+backend/tests/test_dashboard.py::test_dashboard_stats PASSED             [  3%]
+backend/tests/test_e2e_integration.py::test_e2e_health_and_options PASSED [  6%]
+backend/tests/test_e2e_integration.py::test_e2e_crud_lifecycle_and_validation PASSED [ 10%]
+backend/tests/test_e2e_integration.py::test_e2e_dashboard_stats PASSED   [ 13%]
+backend/tests/test_e2e_integration.py::test_frontend_dist_bundle PASSED  [ 17%]
+backend/tests/test_patients.py::test_health_check PASSED                 [ 20%]
+backend/tests/test_patients.py::test_get_options PASSED                  [ 24%]
+backend/tests/test_patients.py::test_create_patient PASSED               [ 27%]
+backend/tests/test_patients.py::test_get_patient_by_id_and_code PASSED   [ 31%]
+backend/tests/test_patients.py::test_get_patient_not_found PASSED        [ 34%]
+backend/tests/test_patients.py::test_list_patients_pagination PASSED     [ 37%]
+backend/tests/test_patients.py::test_search_patients_by_name_and_code PASSED [ 41%]
+backend/tests/test_patients.py::test_filter_patients PASSED              [ 44%]
+backend/tests/test_patients.py::test_update_patient PASSED               [ 48%]
+backend/tests/test_patients.py::test_discharge_patient PASSED            [ 51%]
+backend/tests/test_patients.py::test_delete_patient PASSED               [ 55%]
+backend/tests/test_persistence.py::test_sqlite_persistence_across_sessions PASSED [ 58%]
+backend/tests/test_validation.py::test_reject_missing_name PASSED        [ 62%]
+backend/tests/test_validation.py::test_reject_numbers_in_name PASSED     [ 65%]
+backend/tests/test_validation.py::test_reject_special_characters_in_name PASSED [ 68%]
+backend/tests/test_validation.py::test_accept_and_trim_valid_name PASSED [ 72%]
+backend/tests/test_validation.py::test_reject_negative_age PASSED        [ 75%]
+backend/tests/test_validation.py::test_reject_age_over_120 PASSED        [ 79%]
+backend/tests/test_validation.py::test_reject_future_admission_date PASSED [ 82%]
+backend/tests/test_validation.py::test_reject_invalid_gender PASSED      [ 86%]
+backend/tests/test_validation.py::test_reject_invalid_ward PASSED        [ 89%]
+backend/tests/test_validation.py::test_reject_invalid_department PASSED  [ 93%]
 backend/tests/test_validation.py::test_reject_invalid_doctor PASSED      [ 96%]
 backend/tests/test_validation.py::test_reject_doctor_department_mismatch PASSED [100%]
 
-======================= 25 passed in 0.95s =======================
+====================== 29 passed in 15.84s =======================
 ```
 
 To re-run the tests locally:

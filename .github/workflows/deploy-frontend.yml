@@ -38,7 +38,7 @@ jobs:
       - name: Build
         working-directory: ./frontend
         env:
-          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://patient-admission-backend.onrender.com/api' }}
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://medicare-patient-api-tvenkat920.onrender.com/api' }}
         run: npm run build
 
       - name: Upload artifact

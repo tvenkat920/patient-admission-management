@@ -4,6 +4,15 @@
 
 const NAME_REGEX = /^[A-Za-z\s]+$/;
 
+/** Return local calendar date in YYYY-MM-DD format without UTC day-shift. */
+export function getTodayLocalDateString() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export function validatePatientForm(formData, options = {}) {
   const errors = {};
 
@@ -74,11 +83,8 @@ export function validatePatientForm(formData, options = {}) {
   if (!formData.admission_date) {
     errors.admission_date = 'Admission date is required.';
   } else {
-    const selectedDate = new Date(formData.admission_date);
-    const today = new Date();
-    // Normalize to date comparison without time
-    today.setHours(23, 59, 59, 999);
-    if (selectedDate > today) {
+    const todayStr = getTodayLocalDateString();
+    if (formData.admission_date > todayStr) {
       errors.admission_date = 'Admission date cannot be in the future.';
     }
   }
@@ -92,7 +98,9 @@ export function validatePatientForm(formData, options = {}) {
 export function formatDate(dateString) {
   if (!dateString) return '-';
   try {
-    const d = new Date(dateString);
+    // Parse YYYY-MM-DD as local calendar date to avoid timezone off-by-one shifts
+    const parts = /^\d{4}-\d{2}-\d{2}$/.test(dateString) ? dateString.split('-').map(Number) : null;
+    const d = parts ? new Date(parts[0], parts[1] - 1, parts[2]) : new Date(dateString);
     if (isNaN(d.getTime())) return dateString;
     return d.toLocaleDateString('en-US', {
       year: 'numeric',

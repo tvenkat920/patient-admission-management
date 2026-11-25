@@ -197,7 +197,7 @@ export default function DashboardPage({
               Recent Patient Admissions
             </h3>
             <p className="text-xs text-slate-500">
-              Latest patient admissions recorded in SQLite database
+              Latest patient admissions stored in the hospital database
             </p>
           </div>
 

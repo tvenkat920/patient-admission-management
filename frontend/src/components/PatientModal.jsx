@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, UserPlus, Save, AlertCircle } from 'lucide-react';
-import { validatePatientForm } from '../utils/validators';
+import { validatePatientForm, getTodayLocalDateString } from '../utils/validators';
 
 export default function PatientModal({
   isOpen,
@@ -20,7 +20,7 @@ export default function PatientModal({
     ward: '',
     department: '',
     doctor: '',
-    admission_date: new Date().toISOString().split('T')[0],
+    admission_date: getTodayLocalDateString(),
     status: 'Admitted',
   });
 
@@ -37,7 +37,7 @@ export default function PatientModal({
         ward: patient.ward || '',
         department: patient.department || '',
         doctor: patient.doctor || '',
-        admission_date: patient.admission_date || new Date().toISOString().split('T')[0],
+        admission_date: patient.admission_date || getTodayLocalDateString(),
         status: patient.status || 'Admitted',
       });
       setErrors({});
@@ -51,7 +51,7 @@ export default function PatientModal({
         ward: options.wards?.[0] || 'General Ward',
         department: options.departments?.[0] || 'Cardiology',
         doctor: (options.doctors_by_department?.[options.departments?.[0] || 'Cardiology']?.[0]) || '',
-        admission_date: new Date().toISOString().split('T')[0],
+        admission_date: getTodayLocalDateString(),
         status: 'Admitted',
       });
       setErrors({});
@@ -115,7 +115,7 @@ export default function PatientModal({
 
   if (!isOpen) return null;
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getTodayLocalDateString();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">

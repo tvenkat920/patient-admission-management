@@ -1,23 +1,30 @@
-services:
-  # Backend FastAPI Service with Persistent SQLite Disk
-  - type: web
-    name: patient-admission-backend
-    env: python
+databases:
+  - name: medicare-patient-db
+    databaseName: patient_admission
+    user: medicare_admin
+    plan: free
     region: oregon
-    plan: starter
+
+services:
+  # Backend FastAPI Service (Render Free Tier + Persistent Free PostgreSQL)
+  - type: web
+    name: medicare-patient-api-tvenkat920
+    runtime: python
+    region: oregon
+    plan: free
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-    disk:
-      name: sqlite-data
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.10
       - key: ENVIRONMENT
         value: production
+      - key: SEED_IF_EMPTY
+        value: "true"
       - key: DATABASE_URL
-        value: sqlite:////var/data/patients.db
+        fromDatabase:
+          name: medicare-patient-db
+          property: connectionString
       - key: CORS_ORIGINS
-        value: https://tvenkat920.github.io,https://tvenkat920.github.io/patient-admission-management,http://localhost:5173
+        value: https://tvenkat920.github.io,https://medicare-patient-admission.netlify.app,http://localhost:5173
