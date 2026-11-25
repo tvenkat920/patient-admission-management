@@ -362,7 +362,7 @@ python backend/app/seed.py
 - **Frontend Live URL:** `https://patient-admission-management.vercel.app` *(or custom domain)*
 - **Backend API Live URL:** `https://patient-admission-backend.onrender.com/api`
 - **Interactive Swagger Documentation:** `https://patient-admission-backend.onrender.com/api/docs`
-- **Public GitHub Repository:** `https://github.com/your-username/patient-admission-management`
+- **Public GitHub Repository:** `https://github.com/tvenkat920/patient-admission-management`
 
 ---
 
