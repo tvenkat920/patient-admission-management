@@ -20,4 +20,4 @@ services:
       - key: DATABASE_URL
         value: sqlite:////var/data/patients.db
       - key: CORS_ORIGINS
-        value: https://patient-admission-management.vercel.app,http://localhost:5173
+        value: https://tvenkat920.github.io,https://tvenkat920.github.io/patient-admission-management,http://localhost:5173
